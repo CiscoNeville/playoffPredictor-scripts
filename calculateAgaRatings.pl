@@ -12,6 +12,8 @@
 # Output files:
 #   agaMatrixRatingsFile - agaMatrix ratings of all teams to that point in the season  
 #
+#   also CurrentCalculatedRatings.txt  - temp, need this to populate homepage and sort for analyze schedule
+#
 ##############
 
 
@@ -24,6 +26,7 @@ use Data::Dumper;
 #yes, a better way to do this would be calling the argument on the cli...
 my $ncfScoresFile = "/home/neville/cfbPlayoffPredictor/data/current/ncfScoresFile.txt";  
 my $agaMatrixRatingsFile = "/home/neville/cfbPlayoffPredictor/data/current/agaMatrixRatings.txt";
+my $CurrentCalculatedRatingsFile = "/home/neville/cfbPlayoffPredictor/data/current/CurrentCalculatedRatings.txt";
 my $fbsTeams = "/home/neville/cfbPlayoffPredictor/data/2015/fbsTeamNames.txt";
 
 
@@ -215,13 +218,49 @@ $agaRating[$i] = $rCVofI;
 
 
 
-my @output;
+#my @output;
 
 #print all the rating biases to a file
 open (AGAMATRIXRATINGSFILE, ">$agaMatrixRatingsFile") or die "$! error trying to overwrite";
 for (my $i=1; $i<$#teams+2; $i++ ) {    
 print AGAMATRIXRATINGSFILE "$team{$i} agaRating= $agaRating[$i]\n";
-$output[$i] = "$agaRating[$i]:$team{$i}";
+#$output[$i] = "$agaRating[$i]:$team{$i}";
 }
+print "output written to $agaMatrixRatingsFile\n";
 close AGAMATRIXRATINGSFILE;
+
+
+
+
+
+
+
+
+
+
+
+
+#print out sorted ratings for home page and analyze schedule use
+open (CURRENTCALCULATEDRATINGSFILE, ">$CurrentCalculatedRatingsFile") or die "$! error trying to overwrite";
+my @ratings;
+my @sortedRatings;
+
+for (my $i=1; $i<$#teams+2; $i++ ) {    
+push @ratings, "$agaRating[$i]:$team{$i}:$agaRating[$i]: record is $teamWins[$i] and $teamLosses[$i]"
+}
+@sortedRatings = reverse sort @ratings;
+for (my $i=0; $i<$#teams+1; $i++ ) {    
+$sortedRatings[$i] =~ /(.+?):(.+?):(.+?):(.+)/;   #need to greedily take the last part (no : delimiter at the end)
+$sortedRatings[$i] = "$2:$3:$4";   #get rid of the rating in the front (needed earlier to sort) 
+#print  "$sortedRatings[$i]\n";
+print CURRENTCALCULATEDRATINGSFILE "$sortedRatings[$i]\n";
+}
+print "output written to $CurrentCalculatedRatingsFile\n";
+close CURRENTCALCULATEDRATINGSFILE;
+
+
+
+
+
+
 
